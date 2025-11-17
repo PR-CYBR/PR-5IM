@@ -7,6 +7,9 @@ on:
     branches: [main, dev, impl]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   markdown-lint:
     name: Markdown Linting
