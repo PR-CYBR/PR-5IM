@@ -35,7 +35,7 @@ quantum:
   error_correction: false
   measurement_basis: "computational"
   shots: 8192
-  
+
 # Noise Model (for realistic quantum simulation)
 noise:
   enabled: false

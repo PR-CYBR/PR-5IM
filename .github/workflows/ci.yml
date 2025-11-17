@@ -14,17 +14,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 black pylint yamllint
-          
+
       - name: Lint Python files
         run: |
           # Check if any Python files exist
@@ -35,10 +35,11 @@ jobs:
           else
             echo "No Python files found, skipping Python linting"
           fi
-          
+
       - name: Lint YAML files
         run: |
-          yamllint -d "{extends: default, rules: {line-length: {max: 120}, document-start: disable}}" configs/ workflows/ .github/workflows/ || true
+          yamllint -d "{extends: default, rules: {line-length: {max: 120}, document-start: disable}}" \
+            configs/ workflows/ .github/workflows/ || true
 
   validate-configs:
     name: Validate Configuration Files
@@ -46,7 +47,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Validate YAML syntax
         run: |
           # Check YAML files are valid
@@ -54,7 +55,7 @@ jobs:
             echo "Validating $file"
             python -c "import yaml; yaml.safe_load(open('$file'))"
           done
-          
+
       - name: Check required config files
         run: |
           test -f configs/classical.yml || (echo "Missing configs/classical.yml" && exit 1)
@@ -68,7 +69,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Check required directories
         run: |
           test -d docs || (echo "Missing docs directory" && exit 1)
@@ -78,7 +79,7 @@ jobs:
           test -d simulations || (echo "Missing simulations directory" && exit 1)
           test -d workflows || (echo "Missing workflows directory" && exit 1)
           echo "All required directories present"
-          
+
       - name: Check README files
         run: |
           test -f docs/README.md || (echo "Missing docs/README.md" && exit 1)
@@ -96,24 +97,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           # Install test dependencies when available
           # pip install -r requirements.txt
           # pip install pytest pytest-cov
-          
+
       - name: Run tests
         run: |
           echo "Test framework to be implemented"
           # pytest tests/ --cov=src --cov-report=xml --cov-report=term
-          
+
       - name: Upload coverage
         if: false  # Enable when tests are implemented
         uses: codecov/codecov-action@v4
