@@ -1,0 +1,43 @@
+# Classical Simulation Mode Configuration
+# This configuration file defines parameters for classical simulation mode in PR-5IM
+
+mode: classical
+description: "Classical computing simulation mode for traditional system modeling"
+
+# System Integration Parameters
+integration:
+  enabled: true
+  method: "discrete-event"
+  time_step: 0.01
+  max_iterations: 10000
+
+# Simulation Engine Settings
+engine:
+  type: "classical"
+  precision: "double"
+  parallel_processing: true
+  thread_count: 4
+
+# Resource Allocation
+resources:
+  memory_limit: "8GB"
+  cpu_cores: 4
+  gpu_enabled: false
+
+# Logging and Output
+logging:
+  level: "INFO"
+  output_format: "json"
+  save_checkpoints: true
+  checkpoint_interval: 1000
+
+# Model Configuration
+models:
+  enabled: []
+  parameters: {}
+
+# Output Settings
+output:
+  directory: "./simulations/output/classical"
+  save_intermediate: false
+  format: "csv"

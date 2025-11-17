@@ -1,0 +1,76 @@
+# Quantum Simulation Mode Configuration
+# This configuration file defines parameters for quantum simulation mode in PR-5IM
+
+mode: quantum
+description: "Full quantum simulation mode for quantum system modeling"
+
+# System Integration Parameters
+integration:
+  enabled: true
+  method: "quantum-circuit"
+  time_step: 0.001
+  max_iterations: 5000
+
+# Simulation Engine Settings
+engine:
+  type: "quantum"
+  backend: "statevector_simulator"
+  precision: "complex128"
+  parallel_processing: true
+  thread_count: 8
+
+# Resource Allocation
+resources:
+  memory_limit: "32GB"
+  cpu_cores: 16
+  gpu_enabled: true
+  gpu_memory: "16GB"
+
+# Quantum Circuit Parameters
+quantum:
+  num_qubits: 20
+  circuit_depth: 100
+  gate_set: ["u3", "u2", "u1", "cx", "id", "x", "y", "z", "h", "s", "sdg", "t", "tdg", "rx", "ry", "rz"]
+  error_mitigation: true
+  error_correction: false
+  measurement_basis: "computational"
+  shots: 8192
+
+# Noise Model (for realistic quantum simulation)
+noise:
+  enabled: false
+  gate_error_rate: 0.001
+  measurement_error_rate: 0.01
+  thermal_relaxation: true
+  t1: 50000  # T1 relaxation time in nanoseconds
+  t2: 70000  # T2 dephasing time in nanoseconds
+
+# Quantum Algorithm Settings
+algorithms:
+  optimization_level: 3
+  basis_gates: ["u1", "u2", "u3", "cx"]
+  coupling_map: null
+  initial_layout: null
+
+# Logging and Output
+logging:
+  level: "DEBUG"
+  output_format: "json"
+  save_checkpoints: true
+  checkpoint_interval: 100
+  quantum_state_logging: true
+  circuit_logging: true
+
+# Model Configuration
+models:
+  enabled: []
+  parameters: {}
+
+# Output Settings
+output:
+  directory: "./simulations/output/quantum"
+  save_intermediate: true
+  format: "hdf5"
+  save_quantum_states: true
+  save_circuits: true
+  save_density_matrices: false
