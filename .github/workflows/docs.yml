@@ -8,16 +8,10 @@ on:
       - 'docs/**'
       - 'README.md'
       - '.github/workflows/docs.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      - 'README.md'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -26,8 +20,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build documentation
+  build-and-deploy:
+    name: Build and deploy documentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,22 +39,11 @@ jobs:
           mkdir -p public
           cp README.md public/
           cp -r docs public/
-      - name: Upload documentation artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: ./public
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
