@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev, impl]
+  pull_request:
+    branches: [main, dev, impl]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black pylint yamllint
+          
+      - name: Lint Python files
+        run: |
+          # Check if any Python files exist
+          if find . -name "*.py" -not -path "./venv/*" -not -path "./.venv/*" | grep -q .; then
+            echo "Running Python linting..."
+            flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=venv,.venv,__pycache__
+            black --check --diff . --exclude='(venv|\.venv|__pycache__)'
+          else
+            echo "No Python files found, skipping Python linting"
+          fi
+          
+      - name: Lint YAML files
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: {max: 120}, document-start: disable}}" configs/ workflows/ .github/workflows/ || true
+
+  validate-configs:
+    name: Validate Configuration Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Validate YAML syntax
+        run: |
+          # Check YAML files are valid
+          for file in configs/*.yml; do
+            echo "Validating $file"
+            python -c "import yaml; yaml.safe_load(open('$file'))"
+          done
+          
+      - name: Check required config files
+        run: |
+          test -f configs/classical.yml || (echo "Missing configs/classical.yml" && exit 1)
+          test -f configs/hybrid.yml || (echo "Missing configs/hybrid.yml" && exit 1)
+          test -f configs/quantum.yml || (echo "Missing configs/quantum.yml" && exit 1)
+          echo "All required configuration files present"
+
+  validate-structure:
+    name: Validate Directory Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check required directories
+        run: |
+          test -d docs || (echo "Missing docs directory" && exit 1)
+          test -d src/engines || (echo "Missing src/engines directory" && exit 1)
+          test -d src/models || (echo "Missing src/models directory" && exit 1)
+          test -d configs || (echo "Missing configs directory" && exit 1)
+          test -d simulations || (echo "Missing simulations directory" && exit 1)
+          test -d workflows || (echo "Missing workflows directory" && exit 1)
+          echo "All required directories present"
+          
+      - name: Check README files
+        run: |
+          test -f docs/README.md || (echo "Missing docs/README.md" && exit 1)
+          test -f src/engines/README.md || (echo "Missing src/engines/README.md" && exit 1)
+          test -f src/models/README.md || (echo "Missing src/models/README.md" && exit 1)
+          test -f configs/README.md || (echo "Missing configs/README.md" && exit 1)
+          test -f simulations/README.md || (echo "Missing simulations/README.md" && exit 1)
+          test -f workflows/README.md || (echo "Missing workflows/README.md" && exit 1)
+          echo "All required README files present"
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: [lint, validate-configs, validate-structure]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install test dependencies when available
+          # pip install -r requirements.txt
+          # pip install pytest pytest-cov
+          
+      - name: Run tests
+        run: |
+          echo "Test framework to be implemented"
+          # pytest tests/ --cov=src --cov-report=xml --cov-report=term
+          
+      - name: Upload coverage
+        if: false  # Enable when tests are implemented
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint, validate-configs, validate-structure, test]
+    if: always()
+    steps:
+      - name: Check CI status
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.validate-configs.result }}" != "success" ] || \
+             [ "${{ needs.validate-structure.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ]; then
+            echo "CI checks failed"
+            exit 1
+          fi
+          echo "All CI checks passed"

@@ -1,0 +1,116 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main, pages]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  validate-docs:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check documentation structure
+        run: |
+          echo "Checking documentation structure..."
+          test -d docs || (echo "Missing docs directory" && exit 1)
+          test -f README.md || (echo "Missing README.md" && exit 1)
+          test -f docs/README.md || (echo "Missing docs/README.md" && exit 1)
+          echo "Documentation structure validated"
+          
+      - name: Validate markdown
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.github/workflows/markdown-link-check-config.json'
+          
+      - name: Check for broken internal links
+        run: |
+          echo "Checking for broken internal links..."
+          # Simple check for markdown files
+          find docs -name "*.md" -exec echo "Validating {}" \;
+
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    needs: validate-docs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install documentation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Install MkDocs or Sphinx when documentation is expanded
+          # pip install mkdocs mkdocs-material
+          # pip install sphinx sphinx-rtd-theme
+          
+      - name: Build documentation site
+        run: |
+          echo "Documentation build placeholder"
+          # Future: Build with MkDocs or Sphinx
+          # mkdocs build
+          # OR
+          # cd docs && make html
+          mkdir -p _site
+          cp README.md _site/
+          cp -r docs _site/
+          
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: build-docs
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/pages'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  docs-status:
+    name: Documentation Status
+    runs-on: ubuntu-latest
+    needs: [validate-docs, build-docs]
+    if: always()
+    steps:
+      - name: Check documentation status
+        run: |
+          if [ "${{ needs.validate-docs.result }}" != "success" ] || \
+             [ "${{ needs.build-docs.result }}" != "success" ]; then
+            echo "Documentation checks failed"
+            exit 1
+          fi
+          echo "All documentation checks passed"

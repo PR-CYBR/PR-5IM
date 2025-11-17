@@ -1,0 +1,67 @@
+# Hybrid Simulation Mode Configuration
+# This configuration file defines parameters for hybrid (classical-quantum) simulation mode in PR-5IM
+
+mode: hybrid
+description: "Hybrid classical-quantum simulation mode for integrated system modeling"
+
+# System Integration Parameters
+integration:
+  enabled: true
+  method: "hybrid-coupling"
+  classical_time_step: 0.01
+  quantum_time_step: 0.001
+  sync_interval: 10
+  max_iterations: 10000
+
+# Simulation Engine Settings
+engine:
+  type: "hybrid"
+  classical_engine: "discrete-event"
+  quantum_engine: "statevector"
+  coupling_method: "weak"
+  precision: "double"
+  parallel_processing: true
+  thread_count: 4
+
+# Resource Allocation
+resources:
+  memory_limit: "16GB"
+  cpu_cores: 8
+  gpu_enabled: true
+  quantum_backend: "simulator"
+  quantum_shots: 1024
+
+# Quantum Circuit Parameters
+quantum:
+  num_qubits: 10
+  circuit_depth: 50
+  gate_set: ["x", "y", "z", "h", "cx", "rz"]
+  error_mitigation: true
+  measurement_basis: "computational"
+
+# Classical-Quantum Interface
+interface:
+  data_exchange_method: "shared_memory"
+  classical_to_quantum: true
+  quantum_to_classical: true
+  feedback_enabled: true
+
+# Logging and Output
+logging:
+  level: "INFO"
+  output_format: "json"
+  save_checkpoints: true
+  checkpoint_interval: 500
+  quantum_state_logging: false
+
+# Model Configuration
+models:
+  enabled: []
+  parameters: {}
+
+# Output Settings
+output:
+  directory: "./simulations/output/hybrid"
+  save_intermediate: true
+  format: "hdf5"
+  save_quantum_states: false
